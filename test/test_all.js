@@ -37,17 +37,24 @@ var BigInteger = require("big-integer");
 // console.log(numhexdecode.toString(10));
 
 
-// Dev2: split & merge
+// // Dev2: split & merge
+// let s = "nghiatcxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+// console.log(s);
+// console.log(s.length);
+// let arr = sss.splitSecretToBigInt(s);
+// // console.log(arr);
+// let value = BigInteger("49937119214509114343548691117920141602615245118674498473442528546336026425464", 10);
+// console.log(sss.inNumbers(arr, value));
+// let rs = sss.mergeBigIntToString(arr);
+// console.log(rs);
+// console.log(rs.length);
+
+
+// Test1:
 let s = "nghiatcxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-console.log(s)
-console.log(s.length)
-let arr = sss.splitSecretToBigInt(s);
-// console.log(arr)
-let value = BigInteger("49937119214509114343548691117920141602615245118674498473442528546336026425464", 10);
-console.log(sss.inNumbers(arr, value));
-let rs = sss.mergeBigIntToString(arr);
-console.log(rs);
-console.log(rs.length);
-
-
+console.log(s);
+console.log(s.length);
+// creates a set of shares
+let arr = sss.create(3, 6, s);
+console.log(arr);
 

@@ -123,5 +123,94 @@ SSS.inNumbers = function(numbers, value) {
   return false;
 };
 
+// Returns a new array of secret shares (encoding x,y pairs as Base64 or Hex strings)
+// created by Shamir's Secret Sharing Algorithm requiring a minimum number of
+// share to recreate, of length shares, from the input secret raw as a string
+SSS.create = function(minimum, shares, secret) {
+  let rs = [];
+
+  // Verify minimum isn't greater than shares; there is no way to recreate
+  // the original polynomial in our current setup, therefore it doesn't make
+  // sense to generate fewer shares than are needed to reconstruct the secret.
+  if (minimum > shares) {
+    throw new Error("cannot require more shares then existing");
+  }
+
+  // Convert the secret to its respective 256-bit BigInteger representation
+  let secrets = this.splitSecretToBigInt(secret);
+
+  // List of currently used numbers in the polynomial
+  let numbers = [];
+  numbers.push(BigInteger.zero);
+
+  // Create the polynomial of degree (minimum - 1); that is, the highest
+  // order term is (minimum-1), though as there is a constant term with
+  // order 0, there are (minimum) number of coefficients.
+  // 
+  // However, the polynomial object is a 2d array, because we are constructing
+  // a different polynomial for each part of the secret
+  // 
+  // polynomial[parts][minimum]
+  let polynomial = new Array(secrets.length);
+  for(let i=0; i<secrets.length; i++) {
+    polynomial[i] = new Array(minimum);
+    polynomial[i][0] = secrets[i];
+    for(let j=1; j<minimum; j++) {
+      // Each coefficient should be unique
+      let number = this.randomNumber();
+      while(this.inNumbers(numbers, number)) {
+        number = this.randomNumber();
+      }
+      numbers.push(number);
+
+      polynomial[i][j] = number;
+    }
+  }
+  // console.log(polynomial);
+
+  // Create the points object; this holds the (x, y) points of each share.
+  // Again, because secrets is an array, each share could have multiple parts
+  // over which we are computing Shamir's Algorithm. The last dimension is
+  // always two, as it is storing an x, y pair of points.
+  // 
+  // points[shares][parts][2]
+  let points = new Array(shares);
+
+  // For every share...
+  for(let i=0; i<shares; i++) {
+    points[i] = new Array(secrets.length);
+    let s = "";
+    // and every part of the secret...
+    for(let j=0; j<secrets.length; j++) {
+      points[i][j] = new Array(2);
+      // generate a new x-coordinate
+      let number = this.randomNumber();
+      while(this.inNumbers(numbers, number)) {
+        number = this.randomNumber();
+      }
+      numbers.push(number);
+
+      // and evaluate the polynomial at that point
+      points[i][j][0] = number;
+      points[i][j][1] = this.evaluatePolynomial(polynomial, j, number);
+
+      // encode
+      s += this.toHex(points[i][j][0]);
+      s += this.toHex(points[i][j][1]);
+    }
+    rs.push(s);
+  }
+
+  return rs;
+};
+
+// Takes a string array of shares encoded in Base64 or Hex created via Shamir's Algorithm
+    // Note: the polynomial will converge if the specified minimum number of shares
+    //       or more are passed to this function. Passing thus does not affect it
+    //       Passing fewer however, simply means that the returned secret is wrong.
+SSS.combine = function(shares) {
+
+};
+
 
 exports = module.exports = SSS;
