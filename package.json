@@ -13,6 +13,10 @@
     "prepublish": "npm run build",
     "dev-file": "node  --require babel-polyfill --require babel-register"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/congnghia0609/ntc-ncrypto.git"
+  },
   "keywords": [
     "ncrypto",
     "crypto",
@@ -22,6 +26,7 @@
   ],
   "author": "NghiaTC",
   "license": "Apache-2.0",
+  "homepage": "https://github.com/congnghia0609/ntc-ncrypto",
   "dependencies": {
     "big-integer": "^1.6.48"
   },
