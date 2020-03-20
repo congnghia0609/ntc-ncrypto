@@ -1,0 +1,49 @@
+{
+  "name": "ntc-ncrypto",
+  "version": "0.0.1",
+  "description": "ntc-ncrypto is module node cryptography",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "mocha -t 40000 --require babel-polyfill --require babel-register",
+    "test-file-auto": "nodemon --exec \"mocha\" -- -t 40000 --require babel-polyfill --require babel-register",
+    "test-file": "mocha  --require babel-polyfill --require babel-register",
+    "build": "npm run build-node",
+    "build-browser": "rm -rf dist && NODE_ENV=production node ./node_modules/webpack/bin/webpack.js && gzip -k -f ./dist/*.js && du -h ./dist/*",
+    "build-node": "mkdir -p ./lib && cp -r ./src/* ./lib/ && babel ./src --out-dir ./lib",
+    "prepublish": "npm run build",
+    "dev-file": "node  --require babel-polyfill --require babel-register"
+  },
+  "keywords": [
+    "ncrypto",
+    "crypto",
+    "cryptography",
+    "encode",
+    "decode"
+  ],
+  "author": "NghiaTC",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "big-integer": "^1.6.48"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-eslint": "^7.1.1",
+    "@babel/core": "^7.8.7",
+    "babel-loader": "^8.0.6",
+    "babel-polyfill": "^6.23.0",
+    "babel-preset-es2015": "^6.16.0",
+    "babel-preset-es2017": "^6.16.0",
+    "babel-register": "^6.14.0",
+    "bluebird": "^3.5.5",
+    "eslint": "^6.8.0",
+    "eslint-plugin-import": "^2.20.1",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-react": "^7.19.0",
+    "json-loader": "^0.5.4",
+    "mocha": "^7.1.1",
+    "mocha-make-stub": "^2.3.2",
+    "should": "^11.1.0",
+    "webpack": "^4.42.0",
+    "webpack-visualizer-plugin": "^0.1.5"
+  }
+}
