@@ -39,7 +39,7 @@ SSS.fromBase64 = function(number) {
 
 // Return Hex string from BigInteger 256 bits long
 SSS.toHex = function(number) {
-  let hexdata = number.toString(16);
+  var hexdata = number.toString(16);
   let n = 64 - hexdata.length;
   for (let i=0; i<n; i++) {
     hexdata = "0" + hexdata;
@@ -57,7 +57,7 @@ SSS.fromHex = function(number) {
 // y = a + bx + cx^2 + dx^3 = ((dx + c)x + b)x + a
 SSS.evaluatePolynomial = function(polynomial, part, value) {
   let last = polynomial[part].length - 1;
-  let result = polynomial[part][last];
+  var result = polynomial[part][last];
   for(let i=last-1; i>=0; --i) {
     result = result.multiply(value).add(polynomial[part][i]).mod(PRIME);
   }
@@ -68,20 +68,20 @@ SSS.evaluatePolynomial = function(polynomial, part, value) {
 // the input byte; all values are right-padded to length 256 bit, even if the most
 // significant bit is zero.
 SSS.splitSecretToBigInt = function(secret) {
-  let result = [];
+  var result = [];
   let hexData = Buffer.from(secret, 'utf8').toString('hex');
   let count = Math.ceil(hexData.length / 64.0);
   for(let i=0; i<count; i++) {
     if((i+1)*64 < hexData.length) {
-      let bi = BigInteger(hexData.substring(i*64, (i+1)*64), 16);
+      var bi = BigInteger(hexData.substring(i*64, (i+1)*64), 16);
       result.push(bi);
     } else {
-      let last = hexData.substring(i*64, hexData.length);
+      var last = hexData.substring(i*64, hexData.length);
       let n = 64 - last.length;
       for(let j=0; j<n; j++) {
         last += "0";
       }
-      let bi = BigInteger(last, 16);
+      var bi = BigInteger(last, 16);
       result.push(bi);
     }
   }
@@ -98,8 +98,8 @@ SSS.trimRight = function(s) {
 
 // Converts an array of BigInteger to the original byte array, removing any least significant nulls
 SSS.mergeBigIntToString = function(secrets) {
-  let result = "";
-  let hexData = "";
+  var result = "";
+  var hexData = "";
   for(let i=0; i<secrets.length; i++) {
     let tmp = secrets[i].toString(16);
     let n = 64 - tmp.length;
@@ -108,8 +108,10 @@ SSS.mergeBigIntToString = function(secrets) {
     }
     hexData = hexData + tmp;
   }
+  // console.log("hexData: " + hexData);
   hexData = this.trimRight(hexData);
   result = Buffer.from(hexData, 'hex').toString('utf8');
+  // console.log("result: " + result);
   return result;
 };
 
@@ -127,7 +129,7 @@ SSS.inNumbers = function(numbers, value) {
 // created by Shamir's Secret Sharing Algorithm requiring a minimum number of
 // share to recreate, of length shares, from the input secret raw as a string
 SSS.create = function(minimum, shares, secret) {
-  let rs = [];
+  var rs = [];
 
   // Verify minimum isn't greater than shares; there is no way to recreate
   // the original polynomial in our current setup, therefore it doesn't make
@@ -137,7 +139,8 @@ SSS.create = function(minimum, shares, secret) {
   }
 
   // Convert the secret to its respective 256-bit BigInteger representation
-  let secrets = this.splitSecretToBigInt(secret);
+  var secrets = this.splitSecretToBigInt(secret);
+  // console.log(secrets);
 
   // List of currently used numbers in the polynomial
   let numbers = [];
@@ -157,7 +160,7 @@ SSS.create = function(minimum, shares, secret) {
     polynomial[i][0] = secrets[i];
     for(let j=1; j<minimum; j++) {
       // Each coefficient should be unique
-      let number = this.randomNumber();
+      var number = this.randomNumber();
       while(this.inNumbers(numbers, number)) {
         number = this.randomNumber();
       }
@@ -179,24 +182,26 @@ SSS.create = function(minimum, shares, secret) {
   // For every share...
   for(let i=0; i<shares; i++) {
     points[i] = new Array(secrets.length);
-    let s = "";
+    var s = "";
     // and every part of the secret...
     for(let j=0; j<secrets.length; j++) {
       points[i][j] = new Array(2);
       // generate a new x-coordinate
-      let number = this.randomNumber();
+      var number = this.randomNumber();
       while(this.inNumbers(numbers, number)) {
         number = this.randomNumber();
       }
       numbers.push(number);
 
       // and evaluate the polynomial at that point
-      points[i][j][0] = number;
-      points[i][j][1] = this.evaluatePolynomial(polynomial, j, number);
+      var x = number;
+      var y = this.evaluatePolynomial(polynomial, j, number);
+      points[i][j][0] = x;
+      points[i][j][1] = y;
 
       // encode
-      s += this.toHex(points[i][j][0]);
-      s += this.toHex(points[i][j][1]);
+      s += this.toHex(x);
+      s += this.toHex(y);
     }
     rs.push(s);
   }
@@ -209,8 +214,120 @@ SSS.create = function(minimum, shares, secret) {
     //       or more are passed to this function. Passing thus does not affect it
     //       Passing fewer however, simply means that the returned secret is wrong.
 SSS.combine = function(shares) {
+  var rs = "";
+  if (shares == null || shares.length == 0) {
+      throw new Error("shares is NULL or empty");
+  }
 
+  // Recreate the original object of x, y points, based upon number of shares
+  // and size of each share (number of parts in the secret).
+  // 
+  // points[shares][parts][2]
+  var points = this.decodeShareHex(shares);
+
+  // Use Lagrange Polynomial Interpolation (LPI) to reconstruct the secret.
+  // For each part of the secret (clearest to iterate over)...
+  var secrets = [];
+  let numSecret = points[0].length;
+  for(let j=0; j<numSecret; j++) {
+    secrets.push(BigInteger.zero);
+    // and every share...
+    for(let i=0; i<shares.length; i++) { // LPI sum loop
+      // remember the current x and y values
+      let ax = points[i][j][0]; // ax
+      let ay = points[i][j][1]; // ay
+      let numerator = BigInteger.one; // LPI numerator
+      let denominator = BigInteger.one; // LPI denominator
+      // and for every other point...
+      for(let k=0; k<shares.length; k++) {
+        if(k != i) {
+          // combine them via half products
+          // x=0 ==> [(0-bx)/(ax-bx)] * ...
+          let bx = points[k][j][0]; // bx
+          let negbx = bx.negate(); // (0-bx)
+          let axbx = ax.subtract(bx).mod(PRIME); // (ax-bx)
+          numerator = numerator.multiply(negbx).mod(PRIME); // (0-bx)*...
+          denominator = denominator.multiply(axbx).mod(PRIME); // (ax-bx)*...
+        }
+      }
+
+      // LPI product: x=0, y = ay * [(x-bx)/(ax-bx)] * ...
+      // multiply together the points (ay)(numerator)(denominator)^-1 ...
+      let fx = ay.multiply(numerator).mod(PRIME);
+      fx = fx.multiply(denominator.modInv(PRIME)).mod(PRIME);
+      
+      // LPI sum: s = fx + fx + ...
+      var secret = secrets[j];
+      secret = secret.add(fx).mod(PRIME);
+      secret = secret.compareTo(BigInteger.zero) > 0 ? secret : secret.add(PRIME);
+      secrets[j] = secret;
+    }
+  }
+
+  // recover secret string.
+  // console.log(secrets);
+  rs = this.mergeBigIntToString(secrets);
+  return rs;
 };
 
+// Takes a string array of shares encoded in Hex created via Shamir's
+// Algorithm; each string must be of equal length of a multiple of 128 characters
+// as a single 128 character share is a pair of 256-bit numbers (x, y).
+SSS.decodeShareHex = function(shares) {
+  // Recreate the original object of x, y points, based upon number of shares
+  // and size of each share (number of parts in the secret).
+  // 
+  // points[shares][parts][2]
+  var points = new Array(shares.length);
+
+  // For each share...
+  for(let i=0; i<shares.length; i++) {
+    // ensure that it is valid
+    if(this.isValidShareHex(shares[i]) == false) {
+      throw new Error("one of the shares is invalid");
+    }
+
+    // find the number of parts it represents.
+    let share = shares[i];
+    let count = share.length / 128;
+    // console.log("count: " + count);
+    points[i] = new Array(count);
+
+    // and for each part, find the x,y pair...
+    for(let j=0; j<count; j++) {
+      points[i][j] = new Array(2);
+      let cshare = share.substring(j*128, (j+1)*128);
+      // decoding from Hex.
+      points[i][j][0] = this.fromHex(cshare.substring(0, 64));
+      points[i][j][1] = this.fromHex(cshare.substring(64, 128));
+    }
+  }
+
+  return points;
+};
+
+// Takes in a given string to check if it is a valid secret
+// Requirements:
+// 	 Length multiple of 128
+//	 Can decode each 64 character block as Hex
+// Returns only success/failure (bool)
+SSS.isValidShareHex = function(candidate) {
+  if(candidate == null || candidate.length == 0) {
+    return false;
+  }
+  if(candidate.length % 128 != 0) {
+    return false;
+  }
+  let count = candidate.length / 64;
+  for(let i=0; i<count; i++) {
+    let part = candidate.substring(i*64, (i+1)*64);
+    let decode = this.fromHex(part);
+    // decode < 0 || decode > PRIME ==> false
+    if(decode.compareTo(BigInteger.zero) < 0 || decode.compareTo(PRIME) == 0) {
+      return false
+    }
+  }
+  return true;
+};
 
 exports = module.exports = SSS;
