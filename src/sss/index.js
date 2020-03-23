@@ -322,8 +322,8 @@ SSS.isValidShareHex = function(candidate) {
   for(let i=0; i<count; i++) {
     let part = candidate.substring(i*64, (i+1)*64);
     let decode = this.fromHex(part);
-    // decode < 0 || decode > PRIME ==> false
-    if(decode.compareTo(BigInteger.zero) < 0 || decode.compareTo(PRIME) == 0) {
+    // decode <= 0 || decode >= PRIME ==> false
+    if(decode.compareTo(BigInteger.zero) <= 0 || decode.compareTo(PRIME) >= 0) {
       return false
     }
   }
