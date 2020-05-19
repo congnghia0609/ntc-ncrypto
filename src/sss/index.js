@@ -19,6 +19,50 @@ SSS.randomNumber = function() {
   return BigInteger.randBetween(BigInteger.one, PRIME);
 };
 
+SSS.hexToBuf = function(hex) {
+  if (hex.length % 2) {
+    hex = `0${hex}`;
+  }
+
+  const len = hex.length / 2;
+  const u8 = new Uint8Array(len);
+
+  let j = 0;
+  for (let i=0; i<len; i++) {
+    u8[i] = parseInt(hex.slice(j, j + 2), 16);
+    j += 2;
+  }
+
+  return u8;
+}
+
+SSS.bufToHex = function(buf) {
+  var hex = "";
+  const len = buf.length;
+  for (let i=0; i<len; i++) {
+    hex += buf[i].toString(16).padStart(2, '0');
+  }
+  return hex;
+}
+
+// Return Base64Url string from BigInteger 256 bits long
+SSS.toBase64Url = function(number) {
+  let hexdata = number.toString(16);
+  let n = 64 - hexdata.length;
+  for (let i=0; i<n; i++) {
+    hexdata = "0" + hexdata;
+  }
+  let buf = Buffer.from(this.hexToBuf(hexdata), 'utf8');
+  return buf.toString('base64');
+};
+
+// Return BigInteger from Base64Url string.
+SSS.fromBase64Url = function(number) {
+  let buf = Buffer.from(number, 'base64');
+  let hexdata = this.bufToHex(buf);
+  return BigInteger(hexdata, 16);
+};
+
 // Return Base64 string from BigInteger 256 bits long
 SSS.toBase64 = function(number) {
   let hexdata = number.toString(16);
@@ -128,7 +172,7 @@ SSS.inNumbers = function(numbers, value) {
 // Returns a new array of secret shares (encoding x,y pairs as Base64 or Hex strings)
 // created by Shamir's Secret Sharing Algorithm requiring a minimum number of
 // share to recreate, of length shares, from the input secret raw as a string
-SSS.create = function(minimum, shares, secret) {
+SSS.create = function(minimum, shares, secret, isBase64) {
   var rs = [];
 
   // Verify minimum isn't greater than shares; there is no way to recreate
@@ -200,8 +244,13 @@ SSS.create = function(minimum, shares, secret) {
       points[i][j][1] = y;
 
       // encode
-      s += this.toHex(x);
-      s += this.toHex(y);
+      if (isBase64) {
+        s += this.toBase64Url(x);
+        s += this.toBase64Url(y);
+      } else {
+        s += this.toHex(x);
+        s += this.toHex(y);
+      }
     }
     rs.push(s);
   }
@@ -210,10 +259,10 @@ SSS.create = function(minimum, shares, secret) {
 };
 
 // Takes a string array of shares encoded in Base64 or Hex created via Shamir's Algorithm
-    // Note: the polynomial will converge if the specified minimum number of shares
-    //       or more are passed to this function. Passing thus does not affect it
-    //       Passing fewer however, simply means that the returned secret is wrong.
-SSS.combine = function(shares) {
+// Note: the polynomial will converge if the specified minimum number of shares
+//       or more are passed to this function. Passing thus does not affect it
+//       Passing fewer however, simply means that the returned secret is wrong.
+SSS.combine = function(shares, isBase64) {
   var rs = "";
   if (shares == null || shares.length == 0) {
       throw new Error("shares is NULL or empty");
@@ -223,7 +272,12 @@ SSS.combine = function(shares) {
   // and size of each share (number of parts in the secret).
   // 
   // points[shares][parts][2]
-  var points = this.decodeShareHex(shares);
+  var points;
+  if (isBase64) {
+    points = this.decodeShareBase64(shares);
+  } else {
+    points = this.decodeShareHex(shares);
+  }
 
   // Use Lagrange Polynomial Interpolation (LPI) to reconstruct the secret.
   // For each part of the secret (clearest to iterate over)...
@@ -322,6 +376,66 @@ SSS.isValidShareHex = function(candidate) {
   for(let i=0; i<count; i++) {
     let part = candidate.substring(i*64, (i+1)*64);
     let decode = this.fromHex(part);
+    // decode <= 0 || decode >= PRIME ==> false
+    if(decode.compareTo(BigInteger.zero) <= 0 || decode.compareTo(PRIME) >= 0) {
+      return false
+    }
+  }
+  return true;
+};
+
+// Takes a string array of shares encoded in Base64 created via Shamir's
+// Algorithm; each string must be of equal length of a multiple of 88 characters
+// as a single 88 character share is a pair of 256-bit numbers (x, y).
+SSS.decodeShareBase64 = function(shares) {
+  // Recreate the original object of x, y points, based upon number of shares
+  // and size of each share (number of parts in the secret).
+  // 
+  // points[shares][parts][2]
+  var points = new Array(shares.length);
+
+  // For each share...
+  for(let i=0; i<shares.length; i++) {
+    // ensure that it is valid
+    if(this.isValidShareBase64(shares[i]) == false) {
+      throw new Error("one of the shares is invalid");
+    }
+
+    // find the number of parts it represents.
+    let share = shares[i];
+    let count = share.length / 88;
+    // console.log("count: " + count);
+    points[i] = new Array(count);
+
+    // and for each part, find the x,y pair...
+    for(let j=0; j<count; j++) {
+      points[i][j] = new Array(2);
+      let cshare = share.substring(j*88, (j+1)*88);
+      // decoding from Hex.
+      points[i][j][0] = this.fromBase64Url(cshare.substring(0, 44));
+      points[i][j][1] = this.fromBase64Url(cshare.substring(44, 88));
+    }
+  }
+
+  return points;
+};
+
+// Takes in a given string to check if it is a valid secret
+// Requirements:
+// 	 Length multiple of 88
+//	 Can decode each 44 character block as Hex
+// Returns only success/failure (bool)
+SSS.isValidShareBase64 = function(candidate) {
+  if(candidate == null || candidate.length == 0) {
+    return false;
+  }
+  if(candidate.length % 88 != 0) {
+    return false;
+  }
+  let count = candidate.length / 44;
+  for(let i=0; i<count; i++) {
+    let part = candidate.substring(i*44, (i+1)*44);
+    let decode = this.fromBase64Url(part);
     // decode <= 0 || decode >= PRIME ==> false
     if(decode.compareTo(BigInteger.zero) <= 0 || decode.compareTo(PRIME) >= 0) {
       return false

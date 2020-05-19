@@ -22,16 +22,19 @@ const BigInteger = require("big-integer");
 // var number = BigInteger("67356225285819719212258382314594931188352598651646313425411610888829358649431", 10);
 // console.log(number.toString(10));
 // // encode
-// var b64data = sss.toBase64(number);
-// console.log(b64data.length); // 88
+// var b64data = sss.toBase64Url(number);
+// console.log(b64data.length);
 // console.log(b64data);
+// // 88
 // // OTRlYTQ1YzMyYzI5MDllNTQwNzBhZDNmMmNlMjg2Zjk4YjU2ZWY1YzcyOGY1NmQ3ZDNhMDljNWJiNTU5MzA1Nw==
+// // 44
+// // lOpFwywpCeVAcK0/LOKG+YtW71xyj1bX06CcW7VZMFc=
 // var hexdata = sss.toHex(number);
 // console.log(hexdata.length); // 64
 // console.log(hexdata);
 // // 94ea45c32c2909e54070ad3f2ce286f98b56ef5c728f56d7d3a09c5bb5593057
 // // decode
-// var numb64decode = sss.fromBase64(b64data);
+// var numb64decode = sss.fromBase64Url(b64data);
 // console.log(numb64decode.toString(10));
 // var numhexdecode = sss.fromHex(hexdata);
 // console.log(numhexdecode.toString(10));
@@ -50,35 +53,35 @@ const BigInteger = require("big-integer");
 // console.log(rs.length);
 
 
-// Test1:
-var s = "nghiatcxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-console.log(s);
-console.log(s.length);
-// creates a set of shares
-var arr = sss.create(3, 6, s);
+// // Test1: encode/decode Hex
+// var s = "nghiatcxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+// console.log(s);
+// console.log(s.length);
+// // creates a set of shares
+// var arr = sss.create(3, 6, s, false);
 // console.log(arr);
 
-// combines shares into secret
-var a1 = arr.slice(0, 3);
-var s1 = sss.combine(a1);
-console.log("combines shares 1 length = " + a1.length);
-console.log("secret: " + s1);
-console.log("secret.length: " + s1.length);
+// // combines shares into secret
+// var a1 = arr.slice(0, 3);
+// var s1 = sss.combine(a1, false);
+// console.log("combines shares 1 length = " + a1.length);
+// console.log("secret: " + s1);
+// console.log("secret.length: " + s1.length);
 
-var a2 = arr.slice(3, 6);
-var s2 = sss.combine(a2);
-console.log("combines shares 2 length = " + a2.length);
-console.log("secret: " + s2);
-console.log("secret.length: " + s2.length);
+// var a2 = arr.slice(3, 6);
+// var s2 = sss.combine(a2, false);
+// console.log("combines shares 2 length = " + a2.length);
+// console.log("secret: " + s2);
+// console.log("secret.length: " + s2.length);
 
-var a3 = arr.slice(1, 5);
-var s3 = sss.combine(a3);
-console.log("combines shares 3 length = " + a3.length);
-console.log("secret: " + s3);
-console.log("secret.length: " + s3.length);
+// var a3 = arr.slice(1, 5);
+// var s3 = sss.combine(a3, false);
+// console.log("combines shares 3 length = " + a3.length);
+// console.log("secret: " + s3);
+// console.log("secret.length: " + s3.length);
 
 
-// // Test2:
+// // Test2: encode/decode Hex
 // var s = "nghiatcxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 // console.log(s);
 // console.log(s.length);
@@ -95,19 +98,82 @@ console.log("secret.length: " + s3.length);
 
 // // combines shares into secret
 // var a1 = arr.slice(0, 3);
-// var s1 = sss.combine(a1);
+// var s1 = sss.combine(a1, false);
 // console.log("combines shares 1 length = " + a1.length);
 // console.log("secret: " + s1);
 // console.log("secret.length: " + s1.length);
 
 // var a2 = arr.slice(3, 6);
-// var s2 = sss.combine(a2);
+// var s2 = sss.combine(a2, false);
 // console.log("combines shares 2 length = " + a2.length);
 // console.log("secret: " + s2);
 // console.log("secret.length: " + s2.length);
 
 // var a3 = arr.slice(1, 5);
-// var s3 = sss.combine(a3);
+// var s3 = sss.combine(a3, false);
+// console.log("combines shares 3 length = " + a3.length);
+// console.log("secret: " + s3);
+// console.log("secret.length: " + s3.length);
+
+
+// Test3: encode/decode Base64Url
+var s = "nghiatcxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+console.log(s);
+console.log(s.length);
+// creates a set of shares
+var arr = sss.create(3, 6, s, true);
+console.log(arr);
+
+// combines shares into secret
+var a1 = arr.slice(0, 3);
+var s1 = sss.combine(a1, true);
+console.log("combines shares 1 length = " + a1.length);
+console.log("secret: " + s1);
+console.log("secret.length: " + s1.length);
+
+var a2 = arr.slice(3, 6);
+var s2 = sss.combine(a2, true);
+console.log("combines shares 2 length = " + a2.length);
+console.log("secret: " + s2);
+console.log("secret.length: " + s2.length);
+
+var a3 = arr.slice(1, 5);
+var s3 = sss.combine(a3, true);
+console.log("combines shares 3 length = " + a3.length);
+console.log("secret: " + s3);
+console.log("secret.length: " + s3.length);
+
+
+// // Test4: encode/decode Base64Url
+// var s = "nghiatcxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+// console.log(s);
+// console.log(s.length);
+// // creates a set of shares
+// var arr = [
+//   "3yHo_uVUBRJJ8AiBL-3SS2OAFoe8A0lYF9PVsylFpfU=hFNCvpl0Vo9pESdgVuQs88bna5lMFgfVsixJEjT38EU=rnqFtyOaWu6ROU7LqegKRBG3hnr75Uwa3xTLRTD_Ahs=HeD7Nh0314-9m6YAaAiLKv5QiPToYd_PpSOveTPf-08=VLnVwLvMoEy19oHz7F1RuQjexvNdBB9Z_0VBFpz3-tw=FVJFrnO0LyhswtULPNUQr3j-rwPVrruAp-SrU-JDQcU=6dUlv2kHgZNYlV0ZiVhtQ_E-Vdt5Qu_74_ur8hLkTaM=oOyKYNhTd98bif9cEOVxPQCJjOh7haA63COMtGVLGDA=",
+//   "coKbKOpKsucIF0hLgL6r2dOJpQ52TXnqU4Y4Znc26aU=Byrn3KrQn8Rq8-F49THePjAxy1fkixnjf7H-Q82tlNY=C-17nZaq6PPDfHCDPIpmVa928rUYAXxkhop-1dhyEqg=kn_fIXrpRCh1WluMW2EQddz9Vlj7m4SlUWnSAupD6yQ=yrT7uX2bF0AEdOUFQx1sd-SAYBj4vY0wLQaXkilp9LQ=65RU1AOhohmmN5dmKChFipsCdCraLIu1I0tlfUCdtdQ=_oHtNTo71hjx5RO_BaDJq2hiZTvpQjN6-O4n6zf8F_M=bd5XjTzbwgZIoXDCeqX_lGbCAIW1kepA-j6xRChI5Co=",
+//   "O7As77L_0wcYIjvuL-Uod9WNAWWsB1W3iFjSVPDfgDE=bfOMBFU6n6dcMTmD7Vp67xwyUMQDLMVv3dkJfU0-GAE=N7rOnWAcjXG_SA0UZyfTi4Rv17ja5_8otHG4nbnYsUE=xhfjU2E_Zc3ldk5S5vUS3nUbHcWP_8Co0ROXF_542T8=3_XtNGxPNC_ZPRydvGdeGomiHRU1alWEFbfYPE4TFPg=hUA48-h2u6gJs4g5wDmvQzbTXQlAagBG3VjBQYGgjDI=AZHs5DhgW27YC5Tw0bW4wkbwpq7l13JNyEpR6m6PM0s=ZLA7GzYugrD-ii2h0f9kx0F8dS0TJQEJgcM1sg4KxHQ=",
+//   "1qi-z1_JzZq1pPaQlajigXK7ZLD49o9uEbAG0i2JPRE=F_-WklezDbbn5TwLzwgTH7y4CrdtgzHkRnoT7yGvlOc=L2ydfKaeEZAdO99MEW5z2_G73Cw17GKSjrFBrtlv91w=AVDKhDGyMJjcslpMKP796I6gMAs7Y3B5Oqqo0abpTSo=Jk2aKW6g1Ol88MXn2mZcRE7o_mjlK4L4rm7Mn-1xW4Y=PTxmdcCnxcI30aqkf1vmC96CmGovnH2G_RvtRaudmoE=vlw4fz5CHvoUteCz1KiQ4VvS_AmZqJUbMC1qIh4TTbU=uNF3vO6B7Q9nA29FFoDg5XnryRJAWPf0Fyn5-qNgorg=",
+//   "BvCmwKngaukEhX9PbO_mbs-kVXJZasFnCTbG1BU4uy8=D5R_MinicWA4MSUYlurfxKeMqHjXcsnB8fe6eGlWl2Q=4EqtWUErsPDEupb-lyrFBcrsDVmutZao3u7NMM0j-eE=atF3vl9wmfzGWsPtaYgmMA3K6VbEctYO0PvxLYEqhPs=yWvAcAYRiz7N08AxR7gS6FUkw5K9Fufb0TUvv6sn0Go=QnYDo7XCF0A_q4zdKLgrzSuwGxdACySdy_YyvbQXKFU=zoJeB5fBh-_JZXZh_e9_lI0VYZfj2sSmn0QU5rbDzjw=RJW7Ip7iy2E5bzLFmA0MRluWRBI_unyVeCIrxSFgnr0=",
+//   "H7L3h0FeMRJhlOjb4P7ujl8TU62V6BR-3hmrgeZSsqY=YIgcyaTE2i9cjWGy2KYwXG-Bihe5tVqwTDvfpGG0bjc=HaQPRVj61WadfsKTNQ_nz8Ysmuw8kbTTdtTUq4pr8ow=mral1sUzGfHO7wqBG5OjpieS8OQVcfWUGMefSmoePwM=hTgwBQUnnz5NpUjq-f5ZmFLeraoWqAUXu3FvpN2InoY=_O78YvsYo8BdIVwlixp889NAACSo1fnHjXwZ06X8LIQ=D_gDXhWQ4efiIxJPn-80PiCE1qRt89bh_IK0ZOZt9Ew=tYgTQLKfnvNrlq8fMyPnKWJ165zEuvu3lOpWnw8_Qiw="
+// ]
+// // console.log(arr);
+
+// // combines shares into secret
+// var a1 = arr.slice(0, 3);
+// var s1 = sss.combine(a1, true);
+// console.log("combines shares 1 length = " + a1.length);
+// console.log("secret: " + s1);
+// console.log("secret.length: " + s1.length);
+
+// var a2 = arr.slice(3, 6);
+// var s2 = sss.combine(a2, true);
+// console.log("combines shares 2 length = " + a2.length);
+// console.log("secret: " + s2);
+// console.log("secret.length: " + s2.length);
+
+// var a3 = arr.slice(1, 5);
+// var s3 = sss.combine(a3, true);
 // console.log("combines shares 3 length = " + a3.length);
 // console.log("secret: " + s3);
 // console.log("secret.length: " + s3.length);
