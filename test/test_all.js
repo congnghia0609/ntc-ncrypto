@@ -29,6 +29,7 @@ const BigInteger = require("big-integer");
 // // OTRlYTQ1YzMyYzI5MDllNTQwNzBhZDNmMmNlMjg2Zjk4YjU2ZWY1YzcyOGY1NmQ3ZDNhMDljNWJiNTU5MzA1Nw==
 // // 44
 // // lOpFwywpCeVAcK0/LOKG+YtW71xyj1bX06CcW7VZMFc=
+// // lOpFwywpCeVAcK0_LOKG-YtW71xyj1bX06CcW7VZMFc=
 // var hexdata = sss.toHex(number);
 // console.log(hexdata.length); // 64
 // console.log(hexdata);

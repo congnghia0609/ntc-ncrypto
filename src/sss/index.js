@@ -53,7 +53,7 @@ SSS.toBase64Url = function(number) {
     hexdata = "0" + hexdata;
   }
   let buf = Buffer.from(this.hexToBuf(hexdata), 'utf8');
-  return buf.toString('base64');
+  return buf.toString('base64').replace(/\+/g, "-").replace(/\//g, "_");
 };
 
 // Return BigInteger from Base64Url string.
