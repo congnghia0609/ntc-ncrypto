@@ -19,6 +19,7 @@ SSS.randomNumber = function() {
   return BigInteger.randBetween(BigInteger.one, PRIME);
 };
 
+// Return Uint8Array binary representation of hex string
 SSS.hexToBuf = function(hex) {
   if (hex.length % 2) {
     hex = `0${hex}`;
@@ -36,6 +37,7 @@ SSS.hexToBuf = function(hex) {
   return u8;
 }
 
+// # Return hex string representation of Uint8Array binary
 SSS.bufToHex = function(buf) {
   var hex = "";
   const len = buf.length;
@@ -132,6 +134,7 @@ SSS.splitSecretToBigInt = function(secret) {
   return result;
 };
 
+// Remove right character '0'
 SSS.trimRight = function(s) {
   let i = s.length - 1;
   while(i >= 0 && s[i] === '0') {
@@ -169,17 +172,25 @@ SSS.inNumbers = function(numbers, value) {
   return false;
 };
 
-// Returns a new array of secret shares (encoding x,y pairs as Base64 or Hex strings)
-// created by Shamir's Secret Sharing Algorithm requiring a minimum number of
-// share to recreate, of length shares, from the input secret raw as a string
+/**
+ * Returns a new array of secret shares (encoding x,y pairs as Base64 or Hex strings)
+ * created by Shamir's Secret Sharing Algorithm requiring a minimum number of
+ * share to recreate, of length shares, from the input secret raw as a string
+ */
 SSS.create = function(minimum, shares, secret, isBase64) {
   var rs = [];
 
   // Verify minimum isn't greater than shares; there is no way to recreate
   // the original polynomial in our current setup, therefore it doesn't make
   // sense to generate fewer shares than are needed to reconstruct the secret.
+  if (minimum <= 0 || shares <= 0) {
+    throw new Error("minimum or shares is invalid");
+  }
   if (minimum > shares) {
     throw new Error("cannot require more shares then existing");
+  }
+  if (secret == null || secret.length == 0) {
+    throw new Error("secret is NULL or empty");
   }
 
   // Convert the secret to its respective 256-bit BigInteger representation
@@ -220,16 +231,11 @@ SSS.create = function(minimum, shares, secret, isBase64) {
   // over which we are computing Shamir's Algorithm. The last dimension is
   // always two, as it is storing an x, y pair of points.
   // 
-  // points[shares][parts][2]
-  let points = new Array(shares);
-
   // For every share...
   for(let i=0; i<shares; i++) {
-    points[i] = new Array(secrets.length);
     var s = "";
     // and every part of the secret...
     for(let j=0; j<secrets.length; j++) {
-      points[i][j] = new Array(2);
       // generate a new x-coordinate
       var number = this.randomNumber();
       while(this.inNumbers(numbers, number)) {
@@ -240,9 +246,6 @@ SSS.create = function(minimum, shares, secret, isBase64) {
       // and evaluate the polynomial at that point
       var x = number;
       var y = this.evaluatePolynomial(polynomial, j, number);
-      points[i][j][0] = x;
-      points[i][j][1] = y;
-
       // encode
       if (isBase64) {
         s += this.toBase64Url(x);
@@ -258,10 +261,12 @@ SSS.create = function(minimum, shares, secret, isBase64) {
   return rs;
 };
 
-// Takes a string array of shares encoded in Base64 or Hex created via Shamir's Algorithm
-// Note: the polynomial will converge if the specified minimum number of shares
-//       or more are passed to this function. Passing thus does not affect it
-//       Passing fewer however, simply means that the returned secret is wrong.
+/**
+ * Takes a string array of shares encoded in Base64 or Hex created via Shamir's Algorithm.
+ * Note: the polynomial will converge if the specified minimum number of shares
+ *       or more are passed to this function. Passing thus does not affect it
+ *       Passing fewer however, simply means that the returned secret is wrong.
+ */
 SSS.combine = function(shares, isBase64) {
   var rs = "";
   if (shares == null || shares.length == 0) {

@@ -123,7 +123,7 @@ console.log(s);
 console.log(s.length);
 // creates a set of shares
 var arr = sss.create(3, 6, s, true);
-console.log(arr);
+// console.log(arr);
 
 // combines shares into secret
 var a1 = arr.slice(0, 3);
