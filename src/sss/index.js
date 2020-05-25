@@ -215,13 +215,13 @@ SSS.create = function(minimum, shares, secret, isBase64) {
     polynomial[i][0] = secrets[i];
     for(let j=1; j<minimum; j++) {
       // Each coefficient should be unique
-      var number = this.randomNumber();
-      while(this.inNumbers(numbers, number)) {
-        number = this.randomNumber();
+      var x = this.randomNumber();
+      while(this.inNumbers(numbers, x)) {
+        x = this.randomNumber();
       }
-      numbers.push(number);
+      numbers.push(x);
 
-      polynomial[i][j] = number;
+      polynomial[i][j] = x;
     }
   }
   // console.log(polynomial);
@@ -237,15 +237,14 @@ SSS.create = function(minimum, shares, secret, isBase64) {
     // and every part of the secret...
     for(let j=0; j<secrets.length; j++) {
       // generate a new x-coordinate
-      var number = this.randomNumber();
-      while(this.inNumbers(numbers, number)) {
-        number = this.randomNumber();
+      var x = this.randomNumber();
+      while(this.inNumbers(numbers, x)) {
+        x = this.randomNumber();
       }
-      numbers.push(number);
+      numbers.push(x);
 
       // and evaluate the polynomial at that point
-      var x = number;
-      var y = this.evaluatePolynomial(polynomial, j, number);
+      var y = this.evaluatePolynomial(polynomial, j, x);
       // encode
       if (isBase64) {
         s += this.toBase64Url(x);
