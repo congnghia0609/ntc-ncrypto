@@ -1,5 +1,5 @@
 # ntc-ncrypto
-ntc-ncrypto is module node cryptography.  
+ntc-ncrypto is a module node cryptography.  
 
 ## Install
 

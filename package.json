@@ -1,7 +1,7 @@
 {
   "name": "ntc-ncrypto",
-  "version": "0.1.0",
-  "description": "ntc-ncrypto is module node cryptography",
+  "version": "0.2.0",
+  "description": "ntc-ncrypto is a module node cryptography",
   "main": "lib/index.js",
   "scripts": {
     "test": "mocha -t 40000 --require babel-polyfill --require babel-register",

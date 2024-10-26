@@ -134,13 +134,17 @@ SSS.splitSecretToBigInt = function(secret) {
   return result;
 };
 
-// Remove right character '0'
-SSS.trimRight = function(s) {
-  let i = s.length - 1;
-  while(i >= 0 && s[i] === '0') {
-    --i;
+// Remove right doubled characters '0' (zero byte in hex)
+SSS.trimRightDoubledZero = function(s) {
+  let end = s.length;
+  for (let i = s.length - 1; i > 2; i -= 2) {
+    if (s[i] === '0' && s[i - 1] === '0') {
+      end = i - 1;
+    } else {
+      break;
+    }
   }
-  return s.substring(0, i + 1);
+  return end == s.length ? s : s.substring(0, end);
 };
 
 // Converts an array of BigInteger to the original byte array, removing any least significant nulls
@@ -156,7 +160,7 @@ SSS.mergeBigIntToString = function(secrets) {
     hexData = hexData + tmp;
   }
   // console.log("hexData: " + hexData);
-  hexData = this.trimRight(hexData);
+  hexData = this.trimRightDoubledZero(hexData);
   result = Buffer.from(hexData, 'hex').toString('utf8');
   // console.log("result: " + result);
   return result;

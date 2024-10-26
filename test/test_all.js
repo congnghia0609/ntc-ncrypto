@@ -219,3 +219,73 @@ describe('Test 6: combine Base64Url', () => {
     assert.equal(s3, s);
   });
 });
+
+// Test 7: encode/decode Hex with special cases: not Latin symbols
+describe('Test 7: encode/decode Hex with special cases: not Latin symbols', () => {
+  beforeEach((done) => {
+      //Before each test we empty the database in your case
+      done();
+  });
+
+  var s = "бар"; // Cyrillic
+  // creates a set of shares
+  var arr = sss.create(3, 6, s, false);
+
+  // combines shares into secret
+  var a1 = arr.slice(0, 3);
+  var s1 = sss.combine(a1, false);
+
+  var a2 = arr.slice(3, 6);
+  var s2 = sss.combine(a2, false);
+
+  var a3 = arr.slice(1, 5);
+  var s3 = sss.combine(a3, false);
+
+  it('Check arr length', () => {
+    assert.equal(arr.length, 6);
+  });
+  it('combines shares 1 length = 3', () => {
+    assert.equal(s1, s);
+  });
+  it('combines shares 2 length = 3', () => {
+    assert.equal(s2, s);
+  });
+  it('combines shares 3 length = 4', () => {
+    assert.equal(s3, s);
+  });
+});
+
+// Test 8: encode/decode Base64Url with special cases: not Latin symbols
+describe('Test 8: encode/decode Base64Url with special cases: not Latin symbols', () => {
+  beforeEach((done) => {
+      //Before each test we empty the database in your case
+      done();
+  });
+
+  var s = "бар"; // Cyrillic
+  // creates a set of shares
+  var arr = sss.create(3, 6, s, true);
+
+  // combines shares into secret
+  var a1 = arr.slice(0, 3);
+  var s1 = sss.combine(a1, true);
+
+  var a2 = arr.slice(3, 6);
+  var s2 = sss.combine(a2, true);
+
+  var a3 = arr.slice(1, 5);
+  var s3 = sss.combine(a3, true);
+
+  it('Check arr length', () => {
+    assert.equal(arr.length, 6);
+  });
+  it('combines shares 1 length = 3', () => {
+    assert.equal(s1, s);
+  });
+  it('combines shares 2 length = 3', () => {
+    assert.equal(s2, s);
+  });
+  it('combines shares 3 length = 4', () => {
+    assert.equal(s3, s);
+  });
+});
