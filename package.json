@@ -1,6 +1,6 @@
 {
   "name": "ntc-ncrypto",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "ntc-ncrypto is a module node cryptography",
   "main": "lib/index.js",
   "scripts": {
